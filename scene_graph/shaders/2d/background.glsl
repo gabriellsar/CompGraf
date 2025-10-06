@@ -6,5 +6,5 @@ uniform sampler2D decal;
 
 void main()
 {
-   outcolor = texture(decal, tex_coord_out);
+  outcolor = texture(decal, tex_coord_out);
 }

@@ -8,7 +8,7 @@ import scene_graph.python.shaderutl as sutl
 class Shader:
   def __init__ (self, light=None, space="camera"):
     self.shaders = []
-    self.textunit = 0
+    self.texunit = 0
     self.light = light
     self.space = space
     self.pid = None
