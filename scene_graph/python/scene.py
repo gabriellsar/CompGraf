@@ -15,6 +15,6 @@ class Scene:
       e.Update(dt)
 
   def Render (self, camera):
-    from state import State
+    from  scene_graph.python.state import State
     st = State(camera)
     self.root.Render(st)

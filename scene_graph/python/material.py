@@ -1,5 +1,5 @@
 import glm
-from appearance import Appearance
+from scene_graph.python.appearance import Appearance
 
 class Material(Appearance):
     def __init__ (self, r, g, b, opacity=1.0):

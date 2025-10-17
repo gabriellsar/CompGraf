@@ -4,6 +4,7 @@ in vec2 tex_coord_out;
 out vec4 outcolor;
 
 uniform sampler2D decal;
+uniform float u_rotation_offset;
 
 void main()
 {
@@ -12,5 +13,6 @@ void main()
             discard;
         }
 
-   outcolor = texture(decal, tex_coord_out);
+   vec2 scrolledCoords = vec2(tex_coord_out.x + u_rotation_offset, tex_coord_out.y);
+   outcolor = texture(decal, scrolledCoords);
 }

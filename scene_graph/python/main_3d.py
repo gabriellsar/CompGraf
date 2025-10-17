@@ -84,7 +84,7 @@ def initialize (win):
   trf3.Translate(0.8,0.0,0.8)
   trf3.Rotate(30.0,0.0,1.0,0.0)
   trf3.Rotate(90.0,-1.0,0.0,0.0)
-  trf3.Scale(0.5,0.7,1.0);
+  trf3.Scale(0.5,0.7,1.0)
 
   cube = Cube() 
   quad = Quad() 

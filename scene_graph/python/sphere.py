@@ -1,6 +1,6 @@
 from OpenGL.GL import *
-from shape import Shape
-from grid import Grid
+from scene_graph.python.shape import Shape
+from scene_graph.python.grid import Grid
 import numpy as np
 import math
 

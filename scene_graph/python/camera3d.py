@@ -1,7 +1,7 @@
 import math
 import glm
 from OpenGL.GL import *
-from camera import *
+from scene_graph.python.camera import *
 
 class Camera3D (Camera):
   def __init__(self, x, y, z):
@@ -44,7 +44,7 @@ class Camera3D (Camera):
     self.ortho = flag
 
   def CreateArcball (self):
-    from arcball import Arcball
+    from scene_graph.python.arcball import Arcball
     d = glm.length(self.eye-self.center)
     self.arcball = Arcball(d)
     return self.arcball

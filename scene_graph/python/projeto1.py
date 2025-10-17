@@ -1,49 +1,41 @@
 import glfw
 
 from camera2d import *
-from circle import *
 from engine import *
 from node import *
 from quad import *
 from scene import *
 from shader import *
-from sphere import *
 from texture import *
 from transform import *
 
 camera = None
 scene = None
-
+earth_shader = None
 
 class SolarSystemEngine(Engine):
-    def __init__(self, earth_orbit_trf, earth_rotation_trf, moon_orbit_trf, mercury_orbit_trf):
+    def __init__(self, earth_orbit_trf, moon_orbit_trf, mercury_orbit_trf):
         self.earth_orbit_trf = earth_orbit_trf
-        self.earth_rotation_trf = earth_rotation_trf
         self.moon_orbit_trf = moon_orbit_trf
         self.mercury_orbit_trf = mercury_orbit_trf
 
     def Update(self, dt):
         earth_orbit_speed = 30.0
-        earth_rotation_speed = 60.0
         moon_orbit_speed = 100.0
         mercury_orbit_speed = 50.0
-
-        # Rotação da Terra
-        self.earth_rotation_trf.Rotate(earth_rotation_speed * dt, 0, 1, 0)
 
         # Movimento de translação
         self.earth_orbit_trf.Rotate(earth_orbit_speed * dt, 0, 0, 1)
         self.moon_orbit_trf.Rotate(moon_orbit_speed * dt, 0, 0, 1)
         self.mercury_orbit_trf.Rotate(mercury_orbit_speed * dt, 0, 0, 1)
 
-# --- Função Principal ---
 def main():
     if not glfw.init(): return
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 1)
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, GL_TRUE)
-    win = glfw.create_window(1000, 720, "Mini Sistema Solar", None, None)
+    win = glfw.create_window(800, 800, "Mini Sistema Solar", None, None)
     if not win:
         glfw.terminate()
         return
@@ -63,7 +55,7 @@ def main():
 
 
 def initialize():
-    global camera, scene
+    global camera, scene,earth_shader
     glClearColor(0.0, 0.0, 0.0, 1.0)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_BLEND)
@@ -77,10 +69,14 @@ def initialize():
     shader.AttachFragmentShader("../shaders/2d/fragment.glsl")
     shader.Link()
 
+    # Shader Terra
+    earth_shader = Shader()
+    earth_shader.AttachVertexShader("../shaders/2d/vertex.glsl")
+    earth_shader.AttachFragmentShader("../shaders/2d/fragment_terra.glsl")
+    earth_shader.Link()
+
     # Geometrias
-    circle = Circle()
     quad = Quad()
-    sphere = Sphere()
 
     # Texturas
     sun_tex = Texture("decal", "../images/sun.jpg")
@@ -96,54 +92,57 @@ def initialize():
 
     # Sol
     sun_trf = Transform()
+    sun_trf.Translate(-2.5, -2.5, 0)
     sun_trf.Scale(5.0, 5.0, 1.0)
 
     # Mercúrio
     mercury_local_trf = Transform()
-    mercury_local_trf.Translate(3.5, 0, 0)
+    mercury_local_trf.Translate(3.2, -0.3, 0)
     mercury_local_trf.Scale(0.6, 0.6, 1.0)
     mercury_orbit_trf = Transform()
 
     # Terra
-    earth_orbit_trf = Transform()
-
     earth_local_trf = Transform()
-    earth_local_trf.Translate(6, 0, 0)
-    earth_local_trf.Scale(.9, .9, 1.0)
+    earth_local_trf.Translate(-0.5, -0.5, 0)
+    earth_local_trf.Scale(1.0, 1.0, 1.0)
 
-    earth_rotation_trf = Transform()
+    earth_orbit_trf = Transform()
+    earth_position_trf = Transform()
+    earth_position_trf.Translate(5.5, 0, 0)
 
     # Lua
-    moon_orbit_trf = Transform()
     moon_local_trf = Transform()
-    moon_local_trf.Translate(1.4, 0, 0)
+    moon_local_trf.Translate(-0.5, -0.5, 0)
     moon_local_trf.Scale(0.5, 0.5, 1.0)
+
+    moon_orbit_trf = Transform()
+    moon_position_trf = Transform()
+    moon_position_trf.Translate(1.5, 0, 0)
 
     # Grafo de Cena
     background_node = Node(trf=background_trf, apps=[space_tex], shps=[quad])
-    sun_node = Node(trf=sun_trf, apps=[sun_tex], shps=[circle])
+    sun_node = Node(trf=sun_trf, apps=[sun_tex], shps=[quad])
 
-    mercury_inner_node = Node(apps=[mercury_tex], shps=[circle])
-    mercury_node = Node(trf=mercury_local_trf, nodes=[mercury_inner_node])
+    mercury_inner_node = Node(apps=[mercury_tex], shps=[quad])
+    mercury_position_node = Node(trf=mercury_local_trf, nodes=[mercury_inner_node])
 
-    moon_inner_node = Node(apps=[moon_tex], shps=[circle])
-    moon_node = Node(trf=moon_local_trf, nodes=[moon_inner_node])
+    moon_local_node = Node(trf=moon_local_trf, apps=[moon_tex], shps=[quad])
+    moon_position_node = Node(trf=moon_position_trf, nodes=[moon_local_node])
+    moon_orbit_node = Node(trf=moon_orbit_trf, nodes=[moon_position_node])
 
-    earth_rotating_node = Node(trf=earth_rotation_trf, apps=[earth_tex], shps=[sphere])
-    earth_node = Node(trf=earth_local_trf, nodes=[
-        earth_rotating_node,
-        Node(trf=moon_orbit_trf, nodes=[moon_node])
-    ])
+    earth_local_node = Node(shader=earth_shader, trf=earth_local_trf, apps=[earth_tex], shps=[quad])
+    earth_position_node = Node(trf=earth_position_trf, nodes=[earth_local_node, moon_orbit_node])
+    earth_orbit_node = Node(trf=earth_orbit_trf, nodes=[earth_position_node])
 
     root = Node(shader=shader, nodes=[
         background_node,
         sun_node,
-        Node(trf=mercury_orbit_trf, nodes=[mercury_node]),
-        Node(trf=earth_orbit_trf, nodes=[earth_node])
+        Node(trf=mercury_orbit_trf, nodes=[mercury_position_node]),
+        earth_orbit_node
     ])
 
     scene = Scene(root)
-    engine = SolarSystemEngine(earth_orbit_trf, earth_rotation_trf, moon_orbit_trf, mercury_orbit_trf)
+    engine = SolarSystemEngine(earth_orbit_trf, moon_orbit_trf, mercury_orbit_trf)
     scene.AddEngine(engine)
 
 
@@ -153,6 +152,13 @@ def update(dt):
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    scroll_speed = 0.5
+    time_value = glfw.get_time()
+
+    earth_shader.UseProgram()
+    earth_shader.SetUniform("u_rotation_offset", time_value * scroll_speed)
+
     scene.Render(camera)
 
 
