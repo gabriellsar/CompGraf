@@ -15,12 +15,18 @@ class Texture(Appearance):
       img = img.transpose(Image.FLIP_TOP_BOTTOM)
       data = np.array(img)
       width, height = img.size
+      if img.mode == 'L':
+        img = img.convert('RGB')
+
+
       if (img.mode == 'RGB'):
         mode = GL_RGB
       elif (img.mode == 'RGBA'):
         mode = GL_RGBA
       else:
         raise RuntimeError("Unsupported image mode: " + img.mode)
+
+      data = np.array(img)
       if (data.dtype == 'uint8'):
         dtype = GL_UNSIGNED_BYTE
       else:

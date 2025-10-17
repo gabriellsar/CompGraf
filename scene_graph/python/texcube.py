@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from PIL import Image
 import numpy as np
 
-from appearance import *
+from scene_graph.python.appearance import *
 
 class TexCube(Appearance):
   def __init__ (self, varname, filename):

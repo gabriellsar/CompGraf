@@ -1,5 +1,5 @@
 from OpenGL.GL import * 
-from shape import *
+from scene_graph.python.shape import *
 import glm
 import numpy as np
 
